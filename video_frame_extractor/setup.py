@@ -8,6 +8,7 @@ with open("requirements.txt", "r", encoding="utf-8") as fh:
 
 setup(
     name="video-frame-extractor",
+    use_scm_version=False,
     version="1.0.0",
     author="Paul Chibueze",
     author_email="chibuezedeveloper@gmail.com",
