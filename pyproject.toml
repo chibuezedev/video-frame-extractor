@@ -1,0 +1,67 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "video-frame-extractor"
+authors = [
+    {name = "Paul Chibueze", email = "chibuezedeveloper@gmail.com"}
+]
+description = "A Python library for downloading videos and extracting frames at specified intervals"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.7"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Multimedia :: Video",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+keywords = ["video", "frame extraction", "opencv", "multimedia", "video processing"]
+dependencies = [
+    "opencv-python>=4.5.0",
+    "requests>=2.25.0",
+    "pathlib2>=2.3.0; python_version<'3.4'",
+]
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://github.com/chibuezedev/video-frame-extractor"
+Documentation = "https://github.com/chibuezedev/video-frame-extractor#readme"
+Repository = "https://github.com/chibuezedev/video-frame-extractor"
+"Bug Reports" = "https://github.com/chibuezedev/video-frame-extractor/issues"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0.0",
+    "pytest-cov>=2.10.0",
+    "black>=21.0.0",
+    "flake8>=3.8.0",
+    "mypy>=0.812",
+    "twine>=3.4.0",
+    "wheel>=0.36.0",
+]
+
+[project.scripts]
+video-extractor = "video_frame_extractor.cli:main"
+
+[tool.setuptools_scm]
+write_to = "video_frame_extractor/_version.py"
+
+[tool.black]
+line-length = 88
+target-version = ['py37']
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
