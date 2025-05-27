@@ -4,6 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "video-frame-extractor"
+version = "0.1.0"
 authors = [
     {name = "Paul Chibueze", email = "chibuezedeveloper@gmail.com"}
 ]
@@ -31,7 +32,6 @@ dependencies = [
     "requests>=2.25.0",
     "pathlib2>=2.3.0; python_version<'3.4'",
 ]
-dynamic = ["version"]
 
 [project.urls]
 Homepage = "https://github.com/chibuezedev/video-frame-extractor"
@@ -52,9 +52,6 @@ dev = [
 
 [project.scripts]
 video-extractor = "video_frame_extractor.cli:main"
-
-[tool.setuptools_scm]
-write_to = "video_frame_extractor/_version.py"
 
 [tool.black]
 line-length = 88
