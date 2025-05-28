@@ -25,7 +25,6 @@ class VideoFrameExtractor:
         self.is_playing = False
         self.metadata = {}
         
-        # Setup logging
         self.setup_logging()
         
     def setup_logging(self):
@@ -52,7 +51,6 @@ class VideoFrameExtractor:
             if 'video' in content_type:
                 return True
             
-            # Check file extension if content-type is not available
             video_extensions = ['.mp4', '.avi', '.mov', '.mkv', '.flv', '.wmv', '.webm']
             parsed_url = urlparse(url)
             if any(parsed_url.path.lower().endswith(ext) for ext in video_extensions):
@@ -62,7 +60,7 @@ class VideoFrameExtractor:
             
         except Exception as e:
             self.logger.warning(f"Could not validate URL: {e}")
-            return True  # Proceed anyway
+            return True
     
     def download_video(self):
         """Download video from URL with progress tracking"""
@@ -72,17 +70,14 @@ class VideoFrameExtractor:
             
             self.logger.info(f"Downloading video from: {self.video_url}")
             
-            # Parse URL to get filename
             parsed_url = urlparse(self.video_url)
             filename = os.path.basename(parsed_url.path)
             if not filename or '.' not in filename:
                 filename = f"downloaded_video_{int(time.time())}.mp4"
             
-            # Sanitize filename
             filename = re.sub(r'[<>:"/\\|?*]', '_', filename)
             self.video_path = filename
             
-            # Download with progress tracking
             response = requests.get(self.video_url, stream=True, timeout=30)
             response.raise_for_status()
             
@@ -99,7 +94,7 @@ class VideoFrameExtractor:
                             progress = (downloaded_size / total_size) * 100
                             print(f"\rDownload progress: {progress:.1f}%", end='', flush=True)
             
-            print()  # New line after progress
+            print()
             self.logger.info(f"Video downloaded successfully: {self.video_path}")
             return True
             
@@ -147,7 +142,6 @@ class VideoFrameExtractor:
             
             cap.release()
             
-            # Save metadata
             metadata_file = os.path.join(self.output_folder, 'video_metadata.json')
             with open(metadata_file, 'w') as f:
                 json.dump(self.metadata, f, indent=2)
@@ -172,7 +166,6 @@ class VideoFrameExtractor:
             total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
             duration = total_frames / fps
             
-            # Calculate start and end frames
             start_frame = int(self.start_time * fps) if self.start_time > 0 else 0
             end_frame = int(self.end_time * fps) if self.end_time else total_frames
             end_frame = min(end_frame, total_frames)
@@ -180,7 +173,6 @@ class VideoFrameExtractor:
             self.logger.info(f"Extracting frames from {self.start_time}s to {self.end_time or duration:.1f}s")
             self.logger.info(f"Frame range: {start_frame} to {end_frame}")
             
-            # Set starting position
             cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
             
             frame_count = start_frame
@@ -193,11 +185,9 @@ class VideoFrameExtractor:
                 if not ret:
                     break
                 
-                # Save frame if it's at the specified interval
                 if (frame_count - start_frame) % interval_frames == 0:
                     current_time = frame_count / fps
                     
-                    # Resize frame if max_width is specified
                     if self.max_width and frame.shape[1] > self.max_width:
                         scale = self.max_width / frame.shape[1]
                         new_width = self.max_width
@@ -207,22 +197,19 @@ class VideoFrameExtractor:
                     frame_filename = f"frame_{saved_count:04d}_time_{current_time:.1f}s.jpg"
                     frame_path = os.path.join(self.output_folder, frame_filename)
                     
-                    # Save with specified quality
                     cv2.imwrite(frame_path, frame, [cv2.IMWRITE_JPEG_QUALITY, self.quality])
                     self.logger.info(f"Saved: {frame_filename}")
                     saved_count += 1
                 
                 frame_count += 1
                 
-                # Progress indicator
-                if frame_count % (fps * 10) == 0:  # Every 10 seconds
+                if frame_count % (fps * 10) == 0:
                     progress = ((frame_count - start_frame) / (end_frame - start_frame)) * 100
                     print(f"Extraction progress: {progress:.1f}%")
             
             cap.release()
             self.logger.info(f"Frame extraction completed. Total frames saved: {saved_count}")
             
-            # Update metadata with extraction results
             self.metadata['frames_extracted'] = saved_count
             self.metadata['actual_end_time'] = frame_count / fps
             
@@ -246,7 +233,6 @@ class VideoFrameExtractor:
             delay = int(1000 / fps) if fps > 0 else 33
             total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
             
-            # Set start position if specified
             if self.start_time > 0:
                 start_frame = int(self.start_time * fps)
                 cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
@@ -266,7 +252,6 @@ class VideoFrameExtractor:
                     if not ret or (self.end_time and current_frame >= self.end_time * fps):
                         break
                     
-                    # Resize frame for display
                     display_frame = frame.copy()
                     height, width = display_frame.shape[:2]
                     if width > 1200:
@@ -275,7 +260,6 @@ class VideoFrameExtractor:
                         new_height = int(height * scale)
                         display_frame = cv2.resize(display_frame, (new_width, new_height))
                     
-                    # Add time overlay
                     current_time = current_frame / fps
                     time_text = f"Time: {current_time:.1f}s"
                     cv2.putText(display_frame, time_text, (10, 30), 
@@ -291,16 +275,16 @@ class VideoFrameExtractor:
                     paused = not paused
                     status = "Paused" if paused else "Resumed"
                     self.logger.info(status)
-                elif key == ord('r'):  # Restart
+                elif key == ord('r'):
                     start_frame = int(self.start_time * fps) if self.start_time > 0 else 0
                     cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
                     paused = False
                     self.logger.info("Video restarted")
-                elif key == ord('f'):  # Fast forward 10 seconds
+                elif key == ord('f'):
                     new_frame = min(current_frame + int(10 * fps), total_frames - 1)
                     cap.set(cv2.CAP_PROP_POS_FRAMES, new_frame)
                     self.logger.info("Fast forward 10s")
-                elif key == ord('b'):  # Rewind 10 seconds
+                elif key == ord('b'):
                     new_frame = max(current_frame - int(10 * fps), 0)
                     cap.set(cv2.CAP_PROP_POS_FRAMES, new_frame)
                     self.logger.info("Rewind 10s")
@@ -346,30 +330,24 @@ class VideoFrameExtractor:
         self.logger.info("=== Enhanced Video Frame Extractor ===")
         
         try:
-            # Download video
+
             if not self.download_video():
                 return False
-            
-            # Create output folder
+
             self.create_output_folder()
             
-            # Get video metadata
             if not self.get_video_metadata():
                 self.logger.warning("Could not extract video metadata")
             
-            # Validate time ranges
             if self.end_time and self.end_time <= self.start_time:
                 self.logger.error("End time must be greater than start time")
                 return False
             
-            # Start frame extraction in a separate thread
             extraction_thread = threading.Thread(target=self.extract_frames)
             extraction_thread.start()
             
-            # Play video
             self.play_video()
             
-            # Wait for extraction to complete
             extraction_thread.join()
             self.create_summary_report()
 
@@ -455,7 +433,6 @@ if __name__ == "__main__":
         print("\nFor help: python enhanced_extractor.py -h")
         print("\nOr modify the script to set parameters directly:")
         
-        # Uncomment and modify these lines to run directly
         video_url = "https://v1.pinimg.com/videos/mc/expMp4/32/3b/3d/323b3d37101ba1300ba331e3d9ed8413_t3.mp4"
         extractor = VideoFrameExtractor(
             video_url=video_url,
