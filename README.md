@@ -14,10 +14,6 @@ A Python library for downloading videos from URLs and extracting frames at speci
 
 ## Installation
 
-### From PyPI (when published)
-```bash
-pip install video-frame-extractor
-```
 
 ### From Source
 ```bash
