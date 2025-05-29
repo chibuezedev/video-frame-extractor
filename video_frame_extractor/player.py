@@ -55,7 +55,6 @@ class VideoPlayer:
                     if not ret or (end_time and current_frame >= end_time * fps):
                         break
                     
-                    # Resize frame for display
                     display_frame = frame.copy()
                     height, width = display_frame.shape[:2]
                     if width > 1200:
@@ -64,7 +63,6 @@ class VideoPlayer:
                         new_height = int(height * scale)
                         display_frame = cv2.resize(display_frame, (new_width, new_height))
                     
-                    # Add time overlay
                     current_time = current_frame / fps
                     time_text = f"Time: {current_time:.1f}s"
                     cv2.putText(display_frame, time_text, (10, 30), 
@@ -87,12 +85,12 @@ class VideoPlayer:
                     paused = False
                     if show_controls:
                         self.logger.info("Video restarted")
-                elif key == ord('f'):  # forward 10 seconds
+                elif key == ord('f'):
                     new_frame = min(current_frame + int(10 * fps), total_frames - 1)
                     cap.set(cv2.CAP_PROP_POS_FRAMES, new_frame)
                     if show_controls:
                         self.logger.info("Fast forward 10s")
-                elif key == ord('b'):  # Rewind 10 seconds
+                elif key == ord('b'):
                     new_frame = max(current_frame - int(10 * fps), 0)
                     cap.set(cv2.CAP_PROP_POS_FRAMES, new_frame)
                     if show_controls:

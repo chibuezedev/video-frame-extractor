@@ -1,4 +1,4 @@
-```
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -168,4 +168,7 @@ extraction_log.txt
 temp/
 tmp/
 *.tmp
-```
+
+app.py
+work.py
+text.tx
