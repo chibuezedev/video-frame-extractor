@@ -4,13 +4,13 @@ A Python library for downloading videos from URLs and extracting frames at speci
 
 ## Features
 
-- 🎥 **Video Download**: Download from any direct video URL
-- 🖼️ **Frame Extraction**: Extract frames at custom intervals (supports decimal seconds)
-- ▶️ **Video Playback**: Interactive video player with controls
-- 📊 **Metadata Extraction**: Comprehensive video information
-- 🎛️ **Customizable Output**: Quality control, resizing, time ranges
-- 📝 **Detailed Logging**: Progress tracking and error handling
-- 📋 **Summary Reports**: Detailed extraction reports
+- Download from any direct video URL
+- Extract frames at custom intervals (supports decimal seconds)
+- Interactive video player with controls
+- video metadata information extraction
+- Customizable Output (Quality control, resizing, time ranges)
+- Progress tracking and error handling
+- extraction reports and summary
 
 ## Installation
 
@@ -34,16 +34,16 @@ pip install -e ".[dev]"
 ### Command Line Usage
 
 ```bash
-# Basic usage
+# basic
 video-extractor "https://example.com/video.mp4"
 
-# Advanced options
+# advanced
 video-extractor "https://example.com/video.mp4" -o my_frames -i 2.5 -q 90 -w 1280
 
-# Extract specific time range
+# extract specific time range
 video-extractor "https://example.com/video.mp4" -s 30 -e 120 -i 3
 
-# Extract without playing video
+# extract without playing video
 video-extractor "https://example.com/video.mp4" --no-play
 ```
 
@@ -53,7 +53,7 @@ video-extractor "https://example.com/video.mp4" --no-play
 ```python
 from video_frame_extractor import VideoFrameExtractor
 
-# Simple extraction
+# extraction
 extractor = VideoFrameExtractor("https://example.com/video.mp4")
 extractor.run()
 ```
@@ -62,15 +62,15 @@ extractor.run()
 ```python
 from video_frame_extractor import VideoFrameExtractor
 
-# Advanced configuration
+# configs
 extractor = VideoFrameExtractor(
     video_url="https://example.com/video.mp4",
     output_folder="my_frames",
-    interval=2.5,  # Extract every 2.5 seconds
+    interval=2.5,  # extract every 2.5 seconds
     quality=90,    # JPEG quality 90%
-    max_width=1280,  # Resize to max 1280px width
-    start_time=,   # Start once
-    end_time=120,    # End at 120 seconds
+    max_width=1280,  # resize to max 1280px width
+    start_time=,   # start once
+    end_time=120,    # end at 120 seconds
     log_level="DEBUG"
 )
 
@@ -81,7 +81,7 @@ success = extractor.run(play_video=True, create_report=True)
 ```python
 from video_frame_extractor import VideoFrameExtractor
 
-# Automatic cleanup
+# cleanup
 with VideoFrameExtractor("https://example.com/video.mp4") as extractor:
     extractor.download_video()
     metadata = extractor.get_video_metadata()
@@ -95,22 +95,22 @@ from video_frame_extractor import VideoFrameExtractor
 
 extractor = VideoFrameExtractor("https://example.com/video.mp4", interval=1.0)
 
-# Download only
+# download only
 if extractor.download_video():
     print("Video downloaded successfully")
 
-# Get metadata
+# metadata
 metadata = extractor.get_video_metadata()
 print(f"Video duration: {metadata.get('duration_seconds', 0):.1f} seconds")
 
-# Extract frames without playing
+# extract frames without playing
 frames_extracted = extractor.extract_frames()
 print(f"Extracted {frames_extracted} frames")
 
-# Play video separately
+# play video separately
 extractor.play_video(show_controls=True)
 
-# Create report
+# create report
 report_path = extractor.create_summary_report()
 print(f"Report saved to: {report_path}")
 ```
@@ -127,11 +127,11 @@ player.play("path/to/video.mp4", start_time=10, end_time=60)
 ```python
 from video_frame_extractor import validate_url, sanitize_filename
 
-# Validate video URL
+# validate video URL
 is_valid = validate_url("https://example.com/video.mp4")
 print(f"URL is valid: {is_valid}")
 
-# Clean filename
+# clean filename
 clean_name = sanitize_filename("my video [1080p].mp4")
 print(f"Clean filename: {clean_name}")
 ```
@@ -193,16 +193,7 @@ output_folder/
 }
 ```
 
-## Requirements
-
-- Python 3.7+
-- OpenCV Python (cv2)
-- Requests
-- Pathlib2 (for Python < 3.4)
-
 ## Error Handling
-
-The library includes comprehensive error handling:
 
 ```python
 from video_frame_extractor import VideoFrameExtractor
@@ -232,10 +223,10 @@ git clone https://github.com/chibuezedev/video-frame-extractor.git
 cd video-frame-extractor
 pip install -e ".[dev]"
 
-# Run tests
+# run tests
 pytest tests/
 
-# Run linting
+# run linting
 flake8 video_frame_extractor/
 black video_frame_extractor/
 mypy video_frame_extractor/
@@ -300,12 +291,12 @@ pip install opencv-python-headless
 
 ### Extract Frames from YouTube-dl Downloaded Video
 ```python
-# First download with youtube-dl
+# first download with youtube-dl
 # youtube-dl -o "%(title)s.%(ext)s" "VIDEO_URL"
 
 from video_frame_extractor import VideoFrameExtractor
 
-# Then extract frames from local file
+# then extract frames from local file
 extractor = VideoFrameExtractor(
     "file:///path/to/downloaded_video.mp4",
     interval=1.0,
@@ -340,7 +331,7 @@ for i, url in enumerate(video_urls):
 ```python
 from video_frame_extractor import VideoFrameExtractor
 
-# Extract frames from multiple time ranges
+# extract frames from multiple time ranges
 scenes = [
     (30, 60),   # 30s to 60s
     (120, 180), # 2min to 3min
@@ -400,7 +391,3 @@ For support, please:
    - Operating system
    - Error messages
    - Sample code that reproduces the issue
-
----
-
-**Made with ❤️ for Computer Vision and all video processing enthusiasts**
