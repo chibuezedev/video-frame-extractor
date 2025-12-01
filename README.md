@@ -1,94 +1,167 @@
-# Video Frame Extractor
+# video-frame-extractor-cv
 
-A Python library for downloading videos from URLs and extracting frames at specified intervals with advanced features like video playback, metadata extraction, and customizable output options.
+[![PyPI version](https://badge.fury.io/py/video-frame-extractor-cv.svg)](https://badge.fury.io/py/video-frame-extractor-cv)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+
+A lightweight Python library for downloading videos and extracting frames at precise intervals. It handles direct URLs, supports sub-second extraction, and includes metadata analysis and an interactive player for debugging.
 
 ## Features
 
-- Download from any direct video URL
-- Extract frames at custom intervals (supports decimal seconds)
-- Interactive video player with controls
-- video metadata information extraction
-- Customizable Output (Quality control, resizing, time ranges)
-- Progress tracking and error handling
-- extraction reports and summary
+- **Direct Download:** Process videos directly from URLs without manual downloading.
+- **Precise Extraction:** Support for decimal intervals (e.g., every 0.5 seconds).
+- **Smart resizing:** Resize frames on the fly to save storage.
+- **Metadata:** Automatically extracts FPS, duration, and resolution data.
+- **Interactive Mode:** Optional built-in player to preview or control the process.
+- **Robust:** Includes retry logic, logging, and summary reports.
 
 ## Installation
 
+```bash
+pip install video-frame-extractor-cv
+````
 
-### From Source
+For development or building from source:
+
 ```bash
 git clone https://github.com/chibuezedev/video-frame-extractor.git
 cd video-frame-extractor
 pip install -e .
 ```
 
-### Development Installation
-```bash
-git clone https://github.com/chibuezedev/video-frame-extractor.git
-cd video-frame-extractor
-pip install -e ".[dev]"
-```
-
 ## Quick Start
 
-### Command Line Usage
+### Command Line Interface (CLI)
+
+The library ships with a `video-extractor` entry point for quick operations.
 
 ```bash
-# basic
+# basic: download and extract frames every 5s (default)
 video-extractor "https://example.com/video.mp4"
 
-# advanced
-video-extractor "https://example.com/video.mp4" -o my_frames -i 2.5 -q 90 -w 1280
+# advanced: extract every 0.5s, resize to width 1280px, skip playback
+video-extractor "https://example.com/video.mp4" -i 0.5 -w 1280 --no-play
 
-# extract specific time range
-video-extractor "https://example.com/video.mp4" -s 30 -e 120 -i 3
-
-# extract without playing video
-video-extractor "https://example.com/video.mp4" --no-play
+# specific range: extract from 00:30 to 01:00
+video-extractor "https://example.com/video.mp4" -s 30 -e 60
 ```
 
-### Python API Usage
+### Python Usage
 
-#### Basic Usage
+The recommended way to use the library is via the context manager, which handles cleanup automatically.
+
 ```python
 from video_frame_extractor import VideoFrameExtractor
 
-# extraction
-extractor = VideoFrameExtractor("https://example.com/video.mp4")
-extractor.run()
+# use context manager to handle resources automatically
+with VideoFrameExtractor("https://example.com/video.mp4") as extractor:
+    # this downloads the video and extracts metadata
+    extractor.download_video()
+    
+    # get info before processing
+    meta = extractor.get_video_metadata()
+    print(f"processing {meta['duration_seconds']}s video...")
+    
+    # run extraction
+    count = extractor.extract_frames()
+    print(f"done. extracted {count} frames.")
 ```
 
-#### Advanced Usage
-```python
-from video_frame_extractor import VideoFrameExtractor
+## Advanced Configuration
 
-# configs
+You can customize the extractor behavior extensively via the constructor.
+
+```python
 extractor = VideoFrameExtractor(
     video_url="https://example.com/video.mp4",
-    output_folder="my_frames",
-    interval=2.5,  # extract every 2.5 seconds
-    quality=90,    # JPEG quality 90%
-    max_width=1280,  # resize to max 1280px width
-    start_time=,   # start once
-    end_time=120,    # end at 120 seconds
+    output_folder="dataset/train",
+    interval=2.5,    # extract frame every 2.5 seconds
+    quality=90,      # jpeg quality (1-100)
+    max_width=1280,  # downscale if width > 1280
+    start_time=10,   # start at 10s mark
+    end_time=60,     # stop at 60s mark
     log_level="DEBUG"
 )
 
-success = extractor.run(play_video=True, create_report=True)
+# run() wraps download, extraction, and reporting in one call
+extractor.run(play_video=False, create_report=True)
 ```
 
-#### Context Manager Usage
+## Output Structure
+
+The library organizes outputs into a clean directory structure:
+
+```text
+output_folder/
+├── frame_0000_time_0.0s.jpg    # extracted frames
+├── frame_0001_time_2.5s.jpg
+├── video_metadata.json         # resolution, fps, source info
+├── extraction_report.txt       # human-readable summary
+└── extraction_log.txt          # debug logs
+```
+
+## CLI Options Reference
+
+| Flag | Short | Description | Default |
+|------|-------|-------------|---------|
+| `--output` | `-o` | Output directory | `frames` |
+| `--interval` | `-i` | Time between frames (seconds) | `5` |
+| `--quality` | `-q` | JPEG quality (1-100) | `95` |
+| `--width` | `-w` | Max frame width (px) | `None` |
+| `--start` | `-s` | Start timestamp (seconds) | `0` |
+| `--end` | `-e` | End timestamp (seconds) | `None` |
+| `--no-play` | | Disable interactive player | `False` |
+
+## Interactive Player Controls
+
+If you run without `--no-play`, an OpenCV window will open.
+
+  * **`q`**: Quit
+  * **`p`**: Pause/Resume
+  * **`r`**: Restart
+  * **`f` / `b`**: Seek forward/back 10s
+
+## Recipes
+
+### Batch Processing
+
+Process a list of URLs and organize them into separate folders.
+
 ```python
-from video_frame_extractor import VideoFrameExtractor
+urls = [
+    "https://example.com/clip1.mp4",
+    "https://example.com/clip2.mp4"
+]
 
-# cleanup
-with VideoFrameExtractor("https://example.com/video.mp4") as extractor:
-    extractor.download_video()
-    metadata = extractor.get_video_metadata()
-    frames_count = extractor.extract_frames()
-    print(f"Extracted {frames_count} frames")
+for i, url in enumerate(urls):
+    folder = f"data/clip_{i}"
+    
+    # initialize and run in one go
+    extractor = VideoFrameExtractor(url, output_folder=folder)
+    if extractor.run(play_video=False):
+        print(f"finished {url}")
+    else:
+        print(f"failed {url}")
 ```
 
+### Scene Extraction
+
+Extract frames from specific time ranges within a single video.
+
+```python
+# (start_time, end_time) tuples
+scenes = [(30, 60), (120, 180)]
+
+for start, end in scenes:
+    extractor = VideoFrameExtractor(
+        "https://example.com/movie.mp4",
+        output_folder=f"frames/{start}_{end}",
+        start_time=start,
+        end_time=end,
+        interval=1.0
+    )
+    extractor.run(play_video=False)
+```
 #### Individual Operations
 ```python
 from video_frame_extractor import VideoFrameExtractor
@@ -135,29 +208,6 @@ print(f"URL is valid: {is_valid}")
 clean_name = sanitize_filename("my video [1080p].mp4")
 print(f"Clean filename: {clean_name}")
 ```
-
-## Command Line Options
-
-| Option | Short | Description | Default |
-|--------|-------|-------------|---------|
-| `--output` | `-o` | Output folder for frames | `frames` |
-| `--interval` | `-i` | Interval between frames (seconds) | `5` |
-| `--quality` | `-q` | JPEG quality (1-100) | `95` |
-| `--width` | `-w` | Maximum frame width | `None` |
-| `--start` | `-s` | Start time (seconds) | `0` |
-| `--end` | `-e` | End time (seconds) | `None` |
-| `--no-play` | | Skip video playback | `False` |
-| `--no-report` | | Skip summary report | `False` |
-| `--log-level` | | Logging level | `INFO` |
-
-## Video Player Controls
-
-When playing video (interactive mode):
-- **`q`** - Quit playback
-- **`p`** - Pause/unpause
-- **`r`** - Restart from beginning
-- **`f`** - Fast forward 10 seconds
-- **`b`** - Rewind 10 seconds
 
 ## Output Files
 
@@ -206,149 +256,6 @@ try:
 except Exception as e:
     print(f"Unexpected error: {e}")
 ```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-### Development Setup
-
-```bash
-# Clone and install in development mode
-git clone https://github.com/chibuezedev/video-frame-extractor.git
-cd video-frame-extractor
-pip install -e ".[dev]"
-
-# run tests
-pytest tests/
-
-# run linting
-flake8 video_frame_extractor/
-black video_frame_extractor/
-mypy video_frame_extractor/
-```
-
-## Testing
-
-```bash
-# Run all tests
-pytest
-
-# Run with coverage
-pytest --cov=video_frame_extractor
-
-# Run specific test file
-pytest tests/test_extractor.py
-```
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Changelog
-
-### v1.0.0
-- Initial release
-- Video downloading and frame extraction
-- Interactive video player
-- Metadata extraction
-- Command line interface
-- Comprehensive logging and reporting
-
-## Troubleshooting
-
-### Common Issues
-
-**1. OpenCV Installation Issues**
-```bash
-# Try installing with conda
-conda install opencv
-
-# Or use a specific OpenCV package
-pip install opencv-python-headless
-```
-
-**2. Video Download Failures**
-- Ensure the URL is a direct link to a video file
-- Check internet connection
-- Some servers may block automated downloads
-
-**3. Frame Extraction Errors**
-- Verify video file is not corrupted
-- Check available disk space
-- Ensure output directory permissions
-
-**4. Video Playback Issues**
-- Install OpenCV with GUI support
-- On Linux, ensure X11 forwarding is enabled
-- Use `--no-play` flag to skip playback
-
-## Examples
-
-### Extract Frames from YouTube-dl Downloaded Video
-```python
-# first download with youtube-dl
-# youtube-dl -o "%(title)s.%(ext)s" "VIDEO_URL"
-
-from video_frame_extractor import VideoFrameExtractor
-
-# then extract frames from local file
-extractor = VideoFrameExtractor(
-    "file:///path/to/downloaded_video.mp4",
-    interval=1.0,
-    output_folder="youtube_frames"
-)
-extractor.run()
-```
-
-### Batch Processing Multiple Videos
-```python
-from video_frame_extractor import VideoFrameExtractor
-import os
-
-video_urls = [
-    "https://example.com/video1.mp4",
-    "https://example.com/video2.mp4",
-    "https://example.com/video3.mp4"
-]
-
-for i, url in enumerate(video_urls):
-    output_folder = f"batch_frames_{i+1}"
-    
-    with VideoFrameExtractor(url, output_folder=output_folder) as extractor:
-        success = extractor.run(play_video=False)
-        if success:
-            print(f"Successfully processed video {i+1}")
-        else:
-            print(f"Failed to process video {i+1}")
-```
-
-### Extract Specific Scenes
-```python
-from video_frame_extractor import VideoFrameExtractor
-
-# extract frames from multiple time ranges
-scenes = [
-    (30, 60),   # 30s to 60s
-    (120, 180), # 2min to 3min
-    (300, 360)  # 5min to 6min
-]
-
-for i, (start, end) in enumerate(scenes):
-    extractor = VideoFrameExtractor(
-        "https://example.com/movie.mp4",
-        output_folder=f"scene_{i+1}",
-        start_time=start,
-        end_time=end,
-        interval=0.5  # Extract every 0.5 seconds
-    )
-    extractor.run(play_video=False)
-```
-
 ## API Reference
 
 ### VideoFrameExtractor Class
@@ -381,13 +288,31 @@ for i, (start, end) in enumerate(scenes):
 - `sanitize_filename(filename)`: Clean filename for filesystem compatibility
 - `setup_logging(output_folder, log_level="INFO")`: Configure logging
 
-## Support
+## Troubleshooting
+
+**OpenCV Errors:**
+If you see errors related to `cv2` or `libGL`, you might need the headless version of OpenCV for server environments:
+
+```bash
+pip install opencv-python-headless
+```
+
+**Download Failures:**
+Ensure the URL is a direct link to a file (ends in .mp4, .avi, etc). For YouTube links, use a tool like `yt-dlp` to get the direct stream URL first.
+
+## Contributing
+
+1.  Fork the repo
+2.  Create your feature branch (`git checkout -b feature/cool-feature`)
+3.  Commit changes (`git commit -m 'add cool feature'`)
+4.  Push to branch (`git push origin feature/cool-feature`)
+5.  Open a Pull Request
 
 For support, please:
 1. Check the [troubleshooting section](#troubleshooting)
 2. Search [existing issues](https://github.com/chibuezedev/video-frame-extractor/issues)
-3. Create a [new issue](https://github.com/chibuezedev/video-frame-extractor/issues/new) with:
-   - Python version
-   - Operating system
-   - Error messages
-   - Sample code that reproduces the issue
+3. Create a [new issue](https://github.com/chibuezedev/video-frame-extractor/issues/new)
+
+## License
+
+Distributed under the MIT License. See `LICENSE` for more information.
