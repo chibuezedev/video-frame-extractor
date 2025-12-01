@@ -3,7 +3,7 @@ requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "video-frame-extractor"
+name = "video-frame-extractor-cv"
 version = "0.1.0"
 authors = [
     {name = "Paul Chibueze", email = "chibuezedeveloper@gmail.com"}
